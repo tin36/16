@@ -1,6 +1,6 @@
 import json
 
-from flask import Flask, render_template, request, jsonify
+from flask import Flask, render_template, request, jsonify, json
 from flask_sqlalchemy import SQLAlchemy
 from utils import read_json
 
@@ -100,7 +100,8 @@ def users_all():
         return jsonify(users_list), 200, {'Content-Type': 'application/json; charset=utf-8'}
 
     elif request.method == "POST":
-        user_data = json.loads(request.data)
+        user_data = request.args
+
         new_user = User(
             id=user_data['id'],
             first_name=user_data['first_name'],
@@ -117,8 +118,8 @@ def users_all():
 
 @app.route('/users/<int:id>', methods=["GET", "PUT", "DELETE"])
 def user(id):
-    users = User.query.get(id)
     if request.method == "GET":
+        users = User.query.get(id)
         name = {"id": users.id,
                 "first_name": users.first_name,
                 "last_name": users.last_name,
@@ -130,21 +131,150 @@ def user(id):
         return json.dumps(name)
 
     elif request.method == "DELETE":
+        users = User.query.get(id)
         db.session.delete(users)
         db.session.commit()
         return "Удалено", 204
 
     elif request.method == "PUT":
-        user_data = json.loads(request.data)
-        users.id = user_data['id'],
-        users.first_name = user_data['first_name'],
-        users.last_name = user_data['last_name'],
-        users.age = user_data['age'],
-        users.email = user_data['email'],
-        users.role = user_data['role'],
-        users.phone = user_data['phone']
+        user_data = request.args
+        u = User.query.get(id)
+        u.first_name = user_data['first_name']
+        u.last_name = user_data['last_name']
+        u.age = user_data['age']
+        u.email = user_data['email']
+        u.role = user_data['role']
+        u.phone = user_data['phone']
 
-        db.session.add(users)
+        db.session.add(u)
+        db.session.commit()
+        return "Обновили", 204
+
+
+@app.route('/offers/', methods=['POST', 'GET'])
+def offers_all():
+    if request.method == "GET":
+        offers = Offer.query.all()
+        offers_list = []
+        for offer in offers:
+            name = {"id": offer.id,
+                    "order_id": offer.order_id,
+                    "executor_id": offer.executor_id
+                    }
+            offers_list.append(name)
+
+        return jsonify(offers_list), 200, {'Content-Type': 'application/json; charset=utf-8'}
+
+    elif request.method == "POST":
+        user_data = request.args
+        new_offer = Offer(
+            id=user_data['id'],
+            order_id=user_data['order_id'],
+            executor_id=user_data['executor_id']
+        )
+        db.session.add(new_offer)
+        db.session.commit()
+        return '', 201
+
+
+@app.route('/offers/<int:id>', methods=["GET", "PUT", "DELETE"])
+def offer(id):
+    offers = Offer.query.get(id)
+    if request.method == "GET":
+        name = {"id": offers.id,
+                "order_id": offers.order_id,
+                "executor_id": offers.executor_id
+                }
+
+        return json.dumps(name)
+
+    elif request.method == "DELETE":
+        db.session.delete(offers)
+        db.session.commit()
+        return "Удалено", 204
+
+    elif request.method == "PUT":
+        user_data = request.args
+        off = Offer.query.get(id)
+        off.executor_id = user_data['executor_id']
+        db.session.add(off)
+        db.session.commit()
+        return "Обновили", 204
+
+
+@app.route('/orders/', methods=['POST', 'GET'])
+def orders_all():
+    orders = Order.query.all()
+    if request.method == "GET":
+        orders_list = []
+        for order in orders:
+            name = {"id": order.id,
+                    "name": order.name,
+                    "description": order.description,
+                    "start_date": order.start_date,
+                    "end_date": order.end_date,
+                    "address": order.address,
+                    "price": order.price,
+                    "customer_id": order.customer_id,
+                    "executor_id": order.executor_id}
+            orders_list.append(name)
+
+        return jsonify(orders_list), 200, {'Content-Type': 'application/json; charset=utf-8'}
+
+    elif request.method == "POST":
+        user_data = request.args
+
+        new_order = Order(
+            id=user_data['id'],
+            name=user_data['name'],
+            description=user_data['description'],
+            start_date=user_data['start_date'],
+            end_date=user_data['end_date'],
+            address=user_data['address'],
+            price=user_data['price'],
+            customer_id=user_data['customer_id'],
+            executor_id=user_data['executor_id']
+        )
+        db.session.add(new_order)
+        db.session.commit()
+        return '', 201
+
+
+@app.route('/orders/<int:id>', methods=["GET", "PUT", "DELETE"])
+def order(id):
+    if request.method == "GET":
+        orders = Order.query.get(id)
+        name = {"id": order.id,
+                "name": order.name,
+                "description": order.description,
+                "start_date": order.start_date,
+                "end_date": order.end_date,
+                "address": order.address,
+                "price": order.price,
+                "customer_id": order.customer_id,
+                "executor_id": order.executor_id}
+
+        return json.dumps(name)
+
+    elif request.method == "DELETE":
+        orders = Order.query.get(id)
+        db.session.delete(orders)
+        db.session.commit()
+        return "Удалено", 204
+
+    elif request.method == "PUT":
+        user_data = request.args
+        u = Order.query.get(id)
+        u.name = user_data['name']
+        u.description = user_data['description']
+        u.start_date = user_data['start_date']
+        u.end_date = user_data['end_date']
+        u.address = user_data['address']
+        u.price = user_data['price']
+        u.customer_id = user_data['customer_id']
+        u.executor_id = user_data['executor_id']
+
+        db.session.add(u)
         db.session.commit()
         return "Обновили", 204
 
