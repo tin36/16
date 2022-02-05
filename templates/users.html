@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+{% for i in users_list %}
+<p>{{i.id}}</p>
+<p>{{i.first_name}}</p>
+<p>{{i.last_name}}</p>
+<p>{{i.age}}</p>
+<p>{{i.email}}</p>
+<p>{{i.role}}</p>
+<p>{{i.phone}}</p>
+<hr>
+
+{% endfor %}
+</body>
+</html>
